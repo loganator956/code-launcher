@@ -1,12 +1,17 @@
 ﻿using System.Diagnostics;
 
-string homeDir = Path.Combine(Path.GetDirectoryName(Directory.GetCurrentDirectory()), "PortableGit", "home");
-string portableGitDir = Path.Combine(Path.GetDirectoryName(Directory.GetCurrentDirectory()), "PortableGit");
+string currentExe = Process.GetCurrentProcess().MainModule.FileName;
+string exeDir = Path.GetDirectoryName(currentExe);
+
+string homeDir = Path.Combine(Path.GetDirectoryName(exeDir), "PortableGit", "home");
+string portableGitDir = Path.Combine(Path.GetDirectoryName(exeDir), "PortableGit");
 if (!Directory.Exists(homeDir))
     throw new DirectoryNotFoundException($"Can't find dir at {homeDir}");
-ProcessStartInfo codeProcess = new ProcessStartInfo(Path.Combine(Directory.GetCurrentDirectory(), "Code.exe"));
+ProcessStartInfo codeProcess = new ProcessStartInfo(Path.Combine(exeDir, "Code.exe"));
 codeProcess.EnvironmentVariables["HOME"] = homeDir;
 codeProcess.EnvironmentVariables["PATH"] = Path.Combine(homeDir, "bin") +
-    ";" + Directory.GetCurrentDirectory() +
-    ";" + portableGitDir;
+    ";" + exeDir +
+    ";" + portableGitDir +
+    ";" + Path.Combine(portableGitDir, "usr", "bin") +
+    ";" + Path.Combine(portableGitDir, "bin");
 Process.Start(codeProcess);
