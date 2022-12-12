@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-
+string[] arguments = args;
 string currentPath = Environment.GetEnvironmentVariable("PATH");
 
 string currentExe = Process.GetCurrentProcess().MainModule.FileName;
@@ -22,6 +22,8 @@ codeProcess.EnvironmentVariables["PATH"] = Path.Combine(homeDir, "bin") +
     ";" + currentPath;
 codeProcess.ArgumentList.Add("--extensions-dir ");
 codeProcess.ArgumentList.Add(Path.Combine(exeDir, "data", "extensions"));
+foreach(string arg in arguments)
+    codeProcess.ArgumentList.Add(arg);
 
 // need to install the extensions every new place as vs code, although "portable" uses full file paths for the extensions and so they only work in the
 // path where they're initially installed ＼（〇_ｏ）／
