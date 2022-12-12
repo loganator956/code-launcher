@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 
+string currentPath = Environment.GetEnvironmentVariable("PATH");
+
 string currentExe = Process.GetCurrentProcess().MainModule.FileName;
 string exeDir = Path.GetDirectoryName(currentExe);
 
@@ -16,7 +18,8 @@ codeProcess.EnvironmentVariables["PATH"] = Path.Combine(homeDir, "bin") +
     ";" + exeDir +
     ";" + portableGitDir +
     ";" + Path.Combine(portableGitDir, "usr", "bin") +
-    ";" + Path.Combine(portableGitDir, "bin");
+    ";" + Path.Combine(portableGitDir, "bin") + 
+    ";" + currentPath;
 codeProcess.ArgumentList.Add("--extensions-dir ");
 codeProcess.ArgumentList.Add(Path.Combine(exeDir, "data", "extensions"));
 
