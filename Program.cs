@@ -33,6 +33,4 @@ foreach (string line in File.ReadAllLines(Path.Combine(exeDir, "extensionslist.t
     Process.Start(extensionInstallInfo).WaitForExit();
 }
 
-
 Process.Start(codeProcess);
-// now do some extensions
