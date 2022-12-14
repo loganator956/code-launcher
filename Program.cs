@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+string[] arguments = args;
 // Get the system PATH variable. Allows to pass through the system's PATH variable to spawned processes
 string systemPathEnvVar = Environment.GetEnvironmentVariable("PATH") ?? String.Empty;
 
@@ -32,6 +33,8 @@ codeProcess.EnvironmentVariables["PATH"] = Path.Combine(homeDir, "bin") +
     ";" + systemPathEnvVar;
 codeProcess.ArgumentList.Add("--extensions-dir ");
 codeProcess.ArgumentList.Add(Path.Combine(currentExeDirectory, "data", "extensions"));
+foreach(string arg in arguments)
+    codeProcess.ArgumentList.Add(arg);
 
 // need to install the extensions every new place as vs code, although "portable" uses full file paths for the extensions and so they only work in the
 // path where they're initially installed ＼（〇_ｏ）／
