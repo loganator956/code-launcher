@@ -7,7 +7,7 @@ string systemPathEnvVar = Environment.GetEnvironmentVariable("PATH") ?? String.E
 // this process
 ProcessModule? module = Process.GetCurrentProcess().MainModule;
 if (module is null)
-    return;
+    throw new NullReferenceException("MainModule of current process is null");
 string currentExe = module.FileName ?? String.Empty;
 string currentExeDirectory = Path.GetDirectoryName(currentExe) ?? String.Empty;
 string workspaceRootDir = Path.GetDirectoryName(currentExeDirectory) ?? String.Empty;
