@@ -2,6 +2,8 @@
 
 A simple .NET (C#) console application to launch VS Code portable and set some arguments and environment variables.  
 
+[!Recording of execution](recording.gif)
+
 ## Requirements
 
 The program, currently, is very specifically programmed to my needs/setup.
