@@ -15,13 +15,34 @@ string workspaceRootDir = Path.GetDirectoryName(currentExeDirectory) ?? String.E
 string portableGitDir = Path.Combine(workspaceRootDir, "PortableGit");
 string homeDir = Path.Combine(portableGitDir, "home");
 // validate directories
-if (!Directory.Exists(workspaceRootDir))
-    throw new DirectoryNotFoundException($"Can't find workspace root directory at {workspaceRootDir}");
-if (!Directory.Exists(portableGitDir))
-    throw new DirectoryNotFoundException($"Can't find PortableGit directory at {portableGitDir}");
-if (!Directory.Exists(homeDir))
-    throw new DirectoryNotFoundException($"Can't find home directory at {homeDir}");
-
+// required directories
+try
+{
+    if (!Directory.Exists(workspaceRootDir))
+        throw new DirectoryNotFoundException($"Can't find workspace root directory at {workspaceRootDir}");
+    if (!Directory.Exists(portableGitDir))
+        throw new DirectoryNotFoundException($"Can't find PortableGit directory at {portableGitDir}");
+    if (!Directory.Exists(homeDir))
+        throw new DirectoryNotFoundException($"Can't find home directory at {homeDir}");
+}
+catch (DirectoryNotFoundException dirNotFound)
+{
+    PrintInColour(dirNotFound.ToString(), ConsoleColor.Red);
+    Environment.ExitCode = 1;
+    return;
+}
+// check vs code required directories
+try
+{
+    if (!Directory.Exists(Path.Combine(currentExeDirectory, "bin")))
+        throw new DirectoryNotFoundException($"Can't find VSCode bin directory at {Path.Combine(currentExeDirectory, "bin")}");
+}
+catch (DirectoryNotFoundException dirNotFound)
+{
+    PrintInColour(dirNotFound.ToString(), ConsoleColor.Red);
+    Environment.ExitCode = 1;
+    return;
+}
 // Setup the information required to start the code process
 ProcessStartInfo codeProcess = new ProcessStartInfo(Path.Combine(currentExeDirectory, "Code.exe"));
 codeProcess.EnvironmentVariables["HOME"] = homeDir;
@@ -33,7 +54,7 @@ codeProcess.EnvironmentVariables["PATH"] = Path.Combine(homeDir, "bin") +
     ";" + systemPathEnvVar;
 codeProcess.ArgumentList.Add("--extensions-dir ");
 codeProcess.ArgumentList.Add(Path.Combine(currentExeDirectory, "data", "extensions"));
-foreach(string arg in arguments)
+foreach (string arg in arguments)
     codeProcess.ArgumentList.Add(arg);
 
 // need to install the extensions every new place as vs code, although "portable" uses full file paths for the extensions and so they only work in the
@@ -51,3 +72,11 @@ foreach (string line in File.ReadAllLines(Path.Combine(currentExeDirectory, "ext
 }
 
 Process.Start(codeProcess);
+
+void PrintInColour(string message, ConsoleColor colour)
+{
+    ConsoleColor prevColour = Console.ForegroundColor;
+    Console.ForegroundColor = colour;
+    Console.WriteLine(message);
+    Console.ForegroundColor = prevColour;
+}
