@@ -5,8 +5,10 @@ string systemPathEnvVar = Environment.GetEnvironmentVariable("PATH") ?? String.E
 
 // Get paths to important directories
 // this process
-
-string currentExe = Process.GetCurrentProcess().MainModule.FileName ?? String.Empty;
+ProcessModule? module = Process.GetCurrentProcess().MainModule;
+if (module is null)
+    return;
+string currentExe = module.FileName ?? String.Empty;
 string currentExeDirectory = Path.GetDirectoryName(currentExe) ?? String.Empty;
 string workspaceRootDir = Path.GetDirectoryName(currentExeDirectory) ?? String.Empty;
 
