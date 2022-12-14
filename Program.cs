@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-Console.WriteLine(Directory.Exists(""));
 // Get the system PATH variable. Allows to pass through the system's PATH variable to spawned processes
 string systemPathEnvVar = Environment.GetEnvironmentVariable("PATH") ?? String.Empty;
 
