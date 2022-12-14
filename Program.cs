@@ -38,16 +38,20 @@ foreach(string arg in arguments)
 
 // need to install the extensions every new place as vs code, although "portable" uses full file paths for the extensions and so they only work in the
 // path where they're initially installed ＼（〇_ｏ）／
-foreach (string line in File.ReadAllLines(Path.Combine(currentExeDirectory, "extensionslist.txt")))
+string extensionsFilePath = Path.Combine(currentExeDirectory, "extensionslist.txt");
+if (File.Exists(extensionsFilePath))
 {
-    ProcessStartInfo extensionInstallInfo = new ProcessStartInfo("cmd.exe");
-    extensionInstallInfo.ArgumentList.Add("/C"); // tells cmd.exe to execute the following commands and terminate
-    extensionInstallInfo.ArgumentList.Add(Path.Combine(currentExeDirectory, "bin", "code"));
-    extensionInstallInfo.ArgumentList.Add("--install-extension");
-    extensionInstallInfo.ArgumentList.Add(line);
-    Console.WriteLine($"Installing extension: {line}");
-    Process extensionProcess = Process.Start(extensionInstallInfo) ?? throw new NullReferenceException("Spawned extension process is null");
-    extensionProcess.WaitForExit();
+    foreach (string line in File.ReadAllLines(extensionsFilePath))
+    {
+        ProcessStartInfo extensionInstallInfo = new ProcessStartInfo("cmd.exe");
+        extensionInstallInfo.ArgumentList.Add("/C"); // tells cmd.exe to execute the following commands and terminate
+        extensionInstallInfo.ArgumentList.Add(Path.Combine(currentExeDirectory, "bin", "code"));
+        extensionInstallInfo.ArgumentList.Add("--install-extension");
+        extensionInstallInfo.ArgumentList.Add(line);
+        Console.WriteLine($"Installing extension: {line}");
+        Process extensionProcess = Process.Start(extensionInstallInfo) ?? throw new NullReferenceException("Spawned extension process is null");
+        extensionProcess.WaitForExit();
+    }
 }
 
 Process.Start(codeProcess);
