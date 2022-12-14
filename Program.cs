@@ -1,41 +1,53 @@
 ﻿using System.Diagnostics;
 string[] arguments = args;
-string currentPath = Environment.GetEnvironmentVariable("PATH");
+// Get the system PATH variable. Allows to pass through the system's PATH variable to spawned processes
+string systemPathEnvVar = Environment.GetEnvironmentVariable("PATH") ?? String.Empty;
 
-string currentExe = Process.GetCurrentProcess().MainModule.FileName;
-string exeDir = Path.GetDirectoryName(currentExe);
+// Get paths to important directories
+// this process
+ProcessModule? module = Process.GetCurrentProcess().MainModule;
+if (module is null)
+    throw new NullReferenceException("MainModule of current process is null");
+string currentExe = module.FileName ?? String.Empty;
+string currentExeDirectory = Path.GetDirectoryName(currentExe) ?? String.Empty;
+string workspaceRootDir = Path.GetDirectoryName(currentExeDirectory) ?? String.Empty;
 
-if (exeDir.ToLower().Contains("portable apps master"))
-    return; // exits if detects is my "master" copy.
-
-string homeDir = Path.Combine(Path.GetDirectoryName(exeDir), "PortableGit", "home");
-string portableGitDir = Path.Combine(Path.GetDirectoryName(exeDir), "PortableGit");
+string portableGitDir = Path.Combine(workspaceRootDir, "PortableGit");
+string homeDir = Path.Combine(portableGitDir, "home");
+// validate directories
+if (!Directory.Exists(workspaceRootDir))
+    throw new DirectoryNotFoundException($"Can't find workspace root directory at {workspaceRootDir}");
+if (!Directory.Exists(portableGitDir))
+    throw new DirectoryNotFoundException($"Can't find PortableGit directory at {portableGitDir}");
 if (!Directory.Exists(homeDir))
-    throw new DirectoryNotFoundException($"Can't find dir at {homeDir}");
-ProcessStartInfo codeProcess = new ProcessStartInfo(Path.Combine(exeDir, "Code.exe"));
+    throw new DirectoryNotFoundException($"Can't find home directory at {homeDir}");
+
+// Setup the information required to start the code process
+ProcessStartInfo codeProcess = new ProcessStartInfo(Path.Combine(currentExeDirectory, "Code.exe"));
 codeProcess.EnvironmentVariables["HOME"] = homeDir;
 codeProcess.EnvironmentVariables["PATH"] = Path.Combine(homeDir, "bin") +
-    ";" + exeDir +
+    ";" + currentExeDirectory +
     ";" + portableGitDir +
     ";" + Path.Combine(portableGitDir, "usr", "bin") +
-    ";" + Path.Combine(portableGitDir, "bin") + 
-    ";" + currentPath;
+    ";" + Path.Combine(portableGitDir, "bin") +
+    ";" + systemPathEnvVar;
 codeProcess.ArgumentList.Add("--extensions-dir ");
-codeProcess.ArgumentList.Add(Path.Combine(exeDir, "data", "extensions"));
+codeProcess.ArgumentList.Add(Path.Combine(currentExeDirectory, "data", "extensions"));
 foreach(string arg in arguments)
     codeProcess.ArgumentList.Add(arg);
 
 // need to install the extensions every new place as vs code, although "portable" uses full file paths for the extensions and so they only work in the
 // path where they're initially installed ＼（〇_ｏ）／
-foreach (string line in File.ReadAllLines(Path.Combine(exeDir, "extensionslist.txt")))
+foreach (string line in File.ReadAllLines(Path.Combine(currentExeDirectory, "extensionslist.txt")))
 {
     ProcessStartInfo extensionInstallInfo = new ProcessStartInfo("cmd.exe");
-    extensionInstallInfo.ArgumentList.Add("/C");
-    extensionInstallInfo.ArgumentList.Add(Path.Combine(exeDir, "bin", "code"));
+    extensionInstallInfo.ArgumentList.Add("/C"); // tells cmd.exe to execute the following commands and terminate
+    extensionInstallInfo.ArgumentList.Add(Path.Combine(currentExeDirectory, "bin", "code"));
     extensionInstallInfo.ArgumentList.Add("--install-extension");
     extensionInstallInfo.ArgumentList.Add(line);
     Console.WriteLine($"Installing extension: {line}");
-    Process.Start(extensionInstallInfo).WaitForExit();
+    Process extensionProcess = Process.Start(extensionInstallInfo) ?? throw new NullReferenceException("Spawned extension process is null");
+    extensionProcess.WaitForExit();
 }
 
 Process.Start(codeProcess);
